@@ -102,11 +102,12 @@ wisc_apache_wiki_ul(){
 ################################################################################
 wisc_apache_wiki_table(){
     repeat 80 '#'; echo
-    gritFields="stakeholders notes"
+    gritFields="stakeholders notes status"
     dispFields="# site links docroot $gritFields"
+    numCols=$(echo "$dispFields | wc -w | sed 's/ //g'")
     echo "{| class=\"wikitable inventory\""
-    echo "!colspan=\"6\"|${host}: apache/httpd configuration"
-    # echo "** enabled sites:"
+    echo "!colspan=\"${numCols}\"|${host}: apache/httpd configuration"
+
     echo "|-"
     sep='!'
     for fld in $dispFields; do
