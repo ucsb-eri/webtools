@@ -95,7 +95,7 @@ wisc_apache_wiki_table(){
     gritFields="stakeholders notes"
     dispFields="# site links docroot $gritFields"
     echo "{| class=\"wikitable inventory\""
-    echo "!colspan=\"6\"|Configured apache/httpd sites on $host"
+    echo "!colspan=\"6\"|${host}: apache/httpd configuration"
     # echo "** enabled sites:"
     echo "|-"
     sep='!'
