@@ -98,8 +98,10 @@ wisc_apache_wiki_table(){
     echo "!colspan=\"6\"|Configured apache/httpd sites on $host"
     # echo "** enabled sites:"
     echo "|-"
+    sep='!'
     for fld in $dispFields; do
-        printf "!!${fld}"
+        printf "${sep}${fld}"
+        sep='!!'
     done
     printf "\n"
 
@@ -158,8 +160,10 @@ wisc_apache_wiki_table(){
 
         echo "|-"
 
+        sep='|'
         for f in $dispFields; do
-            printf "||${confa[$f]}"
+            printf "${sep}${confa[$f]}"
+            sep='||'
         done
         printf "\n"
     done < <(find $confd -type f -name '*.conf' | sort | grep -v 'le-ssl')
