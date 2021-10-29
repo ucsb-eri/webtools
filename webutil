@@ -93,7 +93,7 @@ wisc_apache_wiki_ul(){
 ################################################################################
 wisc_apache_wiki_table(){
     gritFields="stakeholders notes"
-    dispFields="site links docroot $gritFields"
+    dispFields="# site links docroot $gritFields"
     echo "{| class=\"wikitable inventory\""
     echo "!colspan=\"6\"|Configured apache/httpd sites on $host"
     # echo "** enabled sites:"
@@ -103,7 +103,9 @@ wisc_apache_wiki_table(){
     done
     printf "\n"
 
+    cntr=0
     while read conf; do
+        ((cntr++))
         #echo "** enabled conf: $conf"
         sites=$(cat $conf | grep -v '^ *#' | grep 'ServerName' | sed -e 's/^.*ServerName  *//' | sort -u)
         docroot=$(cat $conf | grep -v '^ *#' | grep 'DocumentRoot' | sed -e 's/^.*DocumentRoot  *//' | sort -u | sed ':a;N;$!ba;s/\n/<br>/g')
@@ -132,6 +134,7 @@ wisc_apache_wiki_table(){
             links+=" ([https://$site https])"
         fi
 
+        confa['#']="${cntr}"
         confa['site']="${site}"
         confa['docroot']="${docroot}"
         confa['links']="${links}"
