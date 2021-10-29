@@ -104,7 +104,7 @@ wisc_apache_wiki_table(){
     repeat 80 '#'; echo
     gritFields="stakeholders notes status"
     dispFields="# site links docroot $gritFields"
-    numCols=$(echo "$dispFields | wc -w | sed 's/ //g'")
+    numCols=$(echo "$dispFields" | wc -w | sed 's/ //g')
     echo "{| class=\"wikitable inventory\""
     echo "!colspan=\"${numCols}\"|${host}: apache/httpd configuration"
 
