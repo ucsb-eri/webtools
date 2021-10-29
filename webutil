@@ -1,0 +1,216 @@
+#!/bin/bash
+executable="$0"
+exe=`basename "$executable"`
+thishost=`uname -n | cut -d. -f1`
+
+errs=/tmp/${exe}.errs
+
+TEST_MODE=
+
+confd=/etc/httpd/vhost.d
+host=$(uname -n)
+
+declare -A confa
+
+################################################################################
+# site based configuration entries
+################################################################################
+
+################################################################################
+myClean(){
+    # leave this in for a short time to clear out /tmp on calling hosts
+    rm -rf /tmp/*.$$
+}
+################################################################################
+myExit(){
+    decho "housecleaning"
+    [ "$2" ] && echo "$2"
+    if [ -f $errs ]; then
+        echo "Found the following errors:"
+        cat $errs
+    fi
+
+    myClean
+
+    decho "exiting ($1)"
+
+    exit $1
+}
+################################################################################
+# The following collection is likely most current in zfsutil
+# Even at that the -o in vecho may not be the best way to do that, ideally update
+# v to verbose or gVERBOSE or VERBOSE in everything...
+################################################################################
+vecho(){
+    [ -n "$verbose" -o -n "$v" ] && echo "$@" || return 0
+}
+################################################################################
+decho(){
+    [ -n "$debug" ] && echo "debug: " "$@" || return 0
+}
+################################################################################
+# should think about the logic here, because we COULD base a conditional
+# ie: techo "would otherwise run_### : ...." ||  run_###
+# The || makes more sense ie: do this OR that, but returns are already set to 0 if NOT engaged so it doesn't show as a failure
+################################################################################
+techo(){
+    [ -n "$TEST_MODE" ] && echo "TEST_MODE: " "$@" || return 0
+}
+################################################################################
+# echo to stderr
+eecho(){
+    echo "$@" 1>&2;
+}
+################################################################################
+deecho(){
+    [ -n "$debug" ] && eecho "$@" || return 0
+}
+################################################################################
+wisc_apache_wiki_ul(){
+    echo "** enabled sites:"
+    while read conf; do
+        buf=
+        #echo "** enabled conf: $conf"
+        svname=$(cat $conf | grep -v '^ *#' | grep 'ServerName' | sed -e 's/^.*ServerName  *//' | sort -u)
+        docroot=$(cat $conf | grep -v '^ *#' | grep 'DocumentRoot' | sed -e 's/^.*DocumentRoot  *//' | sort -u)
+        buf+="*** $svname ([http://$svname http])"
+
+        # see if there is an ssl conf associated with it
+        sslconf=$(echo "$conf" | sed -e 's/\.conf$/-le-ssl.conf/')
+        if [ -f $sslconf ]; then
+            buf+=" ([https://$svname https])"
+        fi
+
+        if [ -n "$docroot" ]; then
+            buf+=" docroot: $docroot"
+        fi
+
+        echo "$buf"
+
+
+    done < <(find $confd -type f -name '*.conf' | sort | grep -v 'le-ssl')
+}
+################################################################################
+wisc_apache_wiki_table(){
+    gritFields="stakeholders notes"
+    dispFields="site links docroot $gritFields"
+    echo "{| class=\"wikitable inventory\""
+    echo "!colspan=\"6\"|Configured apache/httpd sites on $host"
+    # echo "** enabled sites:"
+    echo "|-"
+    for fld in $dispFields; do
+        printf "!!${fld}"
+    done
+    printf "\n"
+
+    while read conf; do
+        #echo "** enabled conf: $conf"
+        sites=$(cat $conf | grep -v '^ *#' | grep 'ServerName' | sed -e 's/^.*ServerName  *//' | sort -u)
+        docroot=$(cat $conf | grep -v '^ *#' | grep 'DocumentRoot' | sed -e 's/^.*DocumentRoot  *//' | sort -u | sed ':a;N;$!ba;s/\n/<br>/g')
+
+        svnamesCount=$(echo "${sites}" | wc -l | tr -d ' ')
+        if [ ${svnamesCount} -eq 1 ]; then
+            site=$sites
+            links="[http://$site http] "
+        else
+            # see if we have an https def in same file
+            portShavedName=$(echo "$sites" | sed -e 's/:443$//' | sort | uniq)
+            portShavedCount=$(echo "${portShavedName}" | wc -l | tr -d ' ')
+
+            if [ ${portShavedCount} -eq 1 ]; then
+                site=${portShavedName}
+                links="[http://$site http] "
+                links+=" ([https://$site https])"
+            else
+                echo "Not sure what to do"
+            fi
+        fi
+
+        # see if there is an ssl conf associated with it
+        sslconf=$(echo "$conf" | sed -e 's/\.conf$/-le-ssl.conf/')
+        if [ -f $sslconf ]; then
+            links+=" ([https://$site https])"
+        fi
+
+        confa['site']="${site}"
+        confa['docroot']="${docroot}"
+        confa['links']="${links}"
+
+        vwv="/var/www/vhosts/$site"
+        grit="${vwv}/.grit"
+        # echo "grit dir: $grit"
+
+
+        for f in $gritFields; do
+            confa[$f]=
+        done
+
+        if [ -d "${grit}" ]; then
+            for f in $gritFields; do
+                varname=grit_${f}
+                # echo "varname: $varname, ${grit}/${f}"
+                [ -f "${grit}/${f}" ] &&  confa[$f]=$(cat "${grit}/${f}" | sed ':a;N;$!ba;s/\n/<br>/g')
+            done
+        fi
+
+        echo "|-"
+
+        for f in $dispFields; do
+            printf "||${confa[$f]}"
+        done
+        printf "\n"
+    done < <(find $confd -type f -name '*.conf' | sort | grep -v 'le-ssl')
+    echo "|}"
+}
+################################################################################
+webu_help(){
+    echo "to be completed later"
+}
+################################################################################
+webu_info(){
+    echo "to be completed later"
+}
+################################################################################
+webu_all(){
+    wisc_apache_wiki_table
+}
+################################################################################
+################################################################################
+
+#wisc_apache_wiki_ul
+
+while [ $# -ge 1 ]; do
+    case $1 in
+        -v)                  v=1 ;;
+        --verbose)           v=1 ;;
+        --yes)               yes=1 ;;
+        -y)                  yes=1 ;;
+        -d)                  debug=1 ;;
+        --debug)             debug=1 ;;
+        --test)              TEST_MODE=1 ;;
+        --db=*)              db=$(echo $1 | cut -d '=' -f2) ;;
+        -h)                  webusc_help "$@" ; myExit 1 ;;
+        --help)              webusc_help "$@" ; myExit 1 ;;
+        -*)                  webusc_help "$@" ; myExit 1 ;;
+        *)                   break ;;
+    esac
+    shift
+done
+
+if [ $# -eq 0 ]; then
+    echo "running default argument: all"
+    subcommand='all'
+else
+    subcommand=$1
+    shift
+fi
+
+# make sure that any subcommand uses a consistent prefix that can be matched by the aeusc_help system
+case $subcommand in
+    all)         webu_all "$@" ;;
+    info)        webusc_info "$@" ;;
+    *)           webusc_help; myExit 1 ;;
+esac
+
+
+myExit 0
