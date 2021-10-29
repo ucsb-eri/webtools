@@ -66,6 +66,15 @@ deecho(){
     [ -n "$debug" ] && eecho "$@" || return 0
 }
 ################################################################################
+# Repeat given char N times using shell function
+repeat(){
+	local start=1
+	local end=${1:-80}
+	local str="${2:-=}"
+	local range=$(seq $start $end)
+	for i in $range ; do echo -n "${str}"; done
+}
+################################################################################
 wisc_apache_wiki_ul(){
     echo "** enabled sites:"
     while read conf; do
@@ -92,6 +101,7 @@ wisc_apache_wiki_ul(){
 }
 ################################################################################
 wisc_apache_wiki_table(){
+    repeat 80 '#'; echo
     gritFields="stakeholders notes"
     dispFields="# site links docroot $gritFields"
     echo "{| class=\"wikitable inventory\""
@@ -168,6 +178,7 @@ wisc_apache_wiki_table(){
         printf "\n"
     done < <(find $confd -type f -name '*.conf' | sort | grep -v 'le-ssl')
     echo "|}"
+    repeat 80 '#'; echo
 }
 ################################################################################
 webu_help(){
