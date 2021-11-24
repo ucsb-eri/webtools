@@ -9,7 +9,7 @@ TEST_MODE=
 
 confd=/etc/httpd/vhost.d
 host=$(uname -n)
-
+VHOST_DIRS="/var/www/vhosts:/var/www/vhosts2"
 declare -A confa
 
 ################################################################################
@@ -152,9 +152,12 @@ wisc_apache_wiki_table(){
         confa['docroot']="${docroot}"
         confa['links']="${links}"
 
-        vwv="/var/www/vhosts/$site"
-        grit="${vwv}/.grit"
-        # echo "grit dir: $grit"
+        #vwv="/var/www/vhosts/$site"
+	for vwv in $(find /var/www -maxdepth 1 -type d -name 'vhosts*'); do
+            grit="${vwv}/.grit"
+	    [ -d ${grit} ] && break
+            # echo "grit dir: $grit"
+	done
 
 
         for f in $gritFields; do
