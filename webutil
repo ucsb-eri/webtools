@@ -155,8 +155,7 @@ wisc_apache_wiki_table(){
         #vwv="/var/www/vhosts/$site"
 	for vwv in $(find /var/www -maxdepth 1 -type d -name 'vhosts*'); do
             grit="${vwv}/${site}/.grit"
-            echo "grit dir: $grit"
-	    [ -d "${grit}" ] && break
+	    [ -d "${grit}" ] && { decho "found grit dir for site: $grit"; break; }
 	done
 
 
