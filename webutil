@@ -113,7 +113,7 @@ wisc_process_apache_config(){
         docroot=${confDocroot}
     else
         for alt in .zRetired .zMigrated; do
-            altDocroot=$(echo ${confDocroot} | sed -E -e 's:/var/www/vhosts(.*)/(.*$):/var/www/vhosts\1/\2/'$alt':')
+            altDocroot=$(echo ${confDocroot} | sed -E -e 's:/var/www/vhosts(.*)/(.*$):/var/www/vhosts\1/'$alt'/\2:')
             decho "altDocroot: ${altDocroot}"
             [ -d "${altDocroot}" ] && { docroot="${altDocroot}"; break; }
         done
