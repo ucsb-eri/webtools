@@ -243,6 +243,40 @@ webusc_home(){
     printf ''
     printf ''
 }
+webusc_change_site_status(){
+    mode=$1; shift
+
+    case $mode in
+        migrate)    modeDir=.zMigrated ;;
+        retire)     modeDir=.zRetired ;;
+        *)          modeDir=.zNotSetCorrectly
+    esac
+
+    for site in "$@"; do
+        decho "site: $site"
+
+        # locate conf
+        conf=/etc/httpd/vhost.d/${site}.conf
+        [ -f ${conf} ] || continue
+
+        for vwv in /var/www/vhosts*; do
+            cksite="${vwv}/${site}"
+            [ -d $cksite ] && { base=$cksite; break; }
+        done
+
+        cdir=/etc/httpd/vhost.d/${modeDir}
+        vdir=${vwv}/${modeDir}
+
+        [ -d "${cdir}" ] || { echo "$cdir not found"; exit 2; }
+        [ -d "${vdir}" ] || { echo "$vdir not found"; exit 2; }
+
+        echo "cp ${conf} ${base}/"
+        echo "mv ${conf} ${cdir}/"
+        echo "mv ${base} ${vdir}/"
+
+
+    done
+}
 ################################################################################
 ################################################################################
 
@@ -279,6 +313,8 @@ case $subcommand in
     all)         webu_all "$@" ;;
     info)        webusc_info "$@" ;;
     home)        webusc_home "$@" ;;
+    retire)      webusc_change_site_status "retire" "$@" ;;
+    migrate)     webusc_change_site_status "migrate" "$@" ;;
     *)           webusc_help; myExit 1 ;;
 esac
 
