@@ -99,7 +99,11 @@ wisc_apache_wiki_ul(){
 
     done < <(find $confd -type f -name '*.conf' | sort | grep -v 'le-ssl')
 }
+################################################################################
 wisc_process_apache_config(){
+    conf=$1; shift
+    color=$1; shift
+
     sites=$(cat $conf | grep -v '^ *#' | grep 'ServerName' | sed -e 's/^.*ServerName  *//' | sort -u)
     docroot=$(cat $conf | grep -v '^ *#' | grep 'DocumentRoot' | sed -e 's/^.*DocumentRoot  *//' | sort -u | sed ':a;N;$!ba;s/\n/<br>/g')
 
@@ -179,12 +183,20 @@ wisc_apache_wiki_table(){
     printf "\n"
 
     cntr=0
-    color=green
+    # color=green
     while read conf; do
         ((cntr++))
         #echo "** enabled conf: $conf"
-        wisc_process_apache_config "${conf}"
+        echo "$conf" | egrep -qi 'retired' && color='red' || color='green'
+        wisc_process_apache_config "${conf}" "${color}"
     done < <(find $confd -type f -name '*.conf' | sort | grep -v 'le-ssl')
+
+    # # Pull retired
+    # while read conf; do
+    #     ((cntr++))
+    #     #echo "** enabled conf: $conf"
+    #     wisc_process_apache_config "${conf}"
+    # done < <(find $confd -type f -name '*.conf' | sort | grep -v 'le-ssl')
     echo "|}"
     repeat 80 '#'; echo
 }
