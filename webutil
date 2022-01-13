@@ -195,6 +195,9 @@ webu_info(){
 webu_all(){
     wisc_apache_wiki_table
 }
+webusc_home(){
+   printf ''
+}
 ################################################################################
 ################################################################################
 
@@ -230,6 +233,7 @@ fi
 case $subcommand in
     all)         webu_all "$@" ;;
     info)        webusc_info "$@" ;;
+    home)        webusc_home "$@" ;;
     *)           webusc_help; myExit 1 ;;
 esac
 
