@@ -105,7 +105,16 @@ wisc_process_apache_config(){
     color=$1; shift
 
     sites=$(cat $conf | grep -v '^ *#' | grep 'ServerName' | sed -e 's/^.*ServerName  *//' | sort -u)
-    docroot=$(cat $conf | grep -v '^ *#' | grep 'DocumentRoot' | sed -e 's/^.*DocumentRoot  *//' | sort -u | sed ':a;N;$!ba;s/\n/<br>/g')
+    defdocroot=$(cat $conf | grep -v '^ *#' | grep 'DocumentRoot' | sed -e 's/^.*DocumentRoot  *//' | sort -u | sed ':a;N;$!ba;s/\n/<br>/g')
+
+    # when retired the sites docroot may have moved, so lets do a quick search for where it should be
+    if [ ! -d "${defdocroot}" ]; then
+        for alt in .zRetired .zMigrated; do
+            altDocroot=$(echo ${defdocroot} | sed -E -e "s:/var/www/vhosts(.*)/(.*$):/var/www/vhosts\1/$alt/\2:")
+            [ -d "${altDocroot}" ] && docroot="${altDocroot}"
+        done
+
+    fi
 
     svnamesCount=$(echo "${sites}" | wc -l | tr -d ' ')
     if [ ${svnamesCount} -eq 1 ]; then
@@ -187,7 +196,10 @@ wisc_apache_wiki_table(){
     while read conf; do
         ((cntr++))
         #echo "** enabled conf: $conf"
-        echo "$conf" | egrep -qi 'retired' && color='red' || color='green'
+        color='green'
+        echo "$conf" | egrep -qi 'retired' && color='red'
+        echo "$conf" | egrep -qi 'migrated' && color='yellow'
+
         wisc_process_apache_config "${conf}" "${color}"
     done < <(find $confd -type f -name '*.conf' | sort | grep -v 'le-ssl')
 
