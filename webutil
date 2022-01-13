@@ -154,9 +154,11 @@ wisc_process_apache_config(){
     # original was not best way to locate .grit folder if we are moving stuff around
     start=$docroot
     grit=
-    while [ "${docroot}" != "/" ]; do
-        [ -d "${docroot}/.grit" ] && { grit="${docroot}/.grit"; break;  }
-        docroot=$(basename ${docroot})
+    while [ "${start}" != "/" ]; do
+        ckgrit="${start}/.grit"
+        decho "checking .grit path: $ckgrit"
+        [ -d "${ckgrit}" ] && { grit="${ckgrit}"; break; }
+        start=$(basename ${start})
     done
     # for vwv in $(find /var/www -maxdepth 1 -type d -name 'vhosts*'); do
     #     grit="${vwv}/${site}/.grit"
