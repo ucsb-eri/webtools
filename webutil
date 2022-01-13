@@ -272,7 +272,9 @@ webusc_change_site_status(){
 
         echo "cp ${conf} ${base}/"
         echo "mv ${conf} ${cdir}/"
-        echo "mv ${base} ${vdir}/"
+        echo "mv ${base}* ${vdir}/"
+
+        echo "# Dont forget to check /etc/nginx/conf.d/sites.conf for entries related to ${site}"
 
 
     done
