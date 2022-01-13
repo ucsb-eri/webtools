@@ -109,6 +109,7 @@ wisc_process_apache_config(){
 
     # when retired the sites docroot may have moved, so lets do a quick search for where it should be
     decho "confDocroot: ${confDocroot}"
+    docroot=
     if [ -d "${confDocroot}" ]; then
         docroot=${confDocroot}
     else
@@ -150,10 +151,17 @@ wisc_process_apache_config(){
     confa['links']="${links}"
 
     #vwv="/var/www/vhosts/$site"
-    for vwv in $(find /var/www -maxdepth 1 -type d -name 'vhosts*'); do
-        grit="${vwv}/${site}/.grit"
-        [ -d "${grit}" ] && { decho "found grit dir for site: $grit"; break; }
+    # original was not best way to locate .grit folder if we are moving stuff around
+    start=$docroot
+    grit=
+    while [ -n "${docroot}" ]; do
+        [ -d "${docroot}/.grit" ] && { grit="${docroot}/.grit"; break;  }
+        docroot=$(basename ${docroot})
     done
+    # for vwv in $(find /var/www -maxdepth 1 -type d -name 'vhosts*'); do
+    #     grit="${vwv}/${site}/.grit"
+    #     [ -d "${grit}" ] && { decho "found grit dir for site: $grit"; break; }
+    # done
 
 
     for f in $gritFields; do
