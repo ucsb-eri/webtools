@@ -154,7 +154,7 @@ wisc_process_apache_config(){
     # original was not best way to locate .grit folder if we are moving stuff around
     start=$docroot
     grit=
-    while [ -n "${docroot}" ]; do
+    while [ "${docroot}" != "/" ]; do
         [ -d "${docroot}/.grit" ] && { grit="${docroot}/.grit"; break;  }
         docroot=$(basename ${docroot})
     done
