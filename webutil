@@ -99,6 +99,68 @@ wisc_apache_wiki_ul(){
 
     done < <(find $confd -type f -name '*.conf' | sort | grep -v 'le-ssl')
 }
+wisc_process_apache_config(){
+    sites=$(cat $conf | grep -v '^ *#' | grep 'ServerName' | sed -e 's/^.*ServerName  *//' | sort -u)
+    docroot=$(cat $conf | grep -v '^ *#' | grep 'DocumentRoot' | sed -e 's/^.*DocumentRoot  *//' | sort -u | sed ':a;N;$!ba;s/\n/<br>/g')
+
+    svnamesCount=$(echo "${sites}" | wc -l | tr -d ' ')
+    if [ ${svnamesCount} -eq 1 ]; then
+        site=$sites
+        links="[http://$site http] "
+    else
+        # see if we have an https def in same file
+        portShavedName=$(echo "$sites" | sed -e 's/:443$//' | sort | uniq)
+        portShavedCount=$(echo "${portShavedName}" | wc -l | tr -d ' ')
+
+        if [ ${portShavedCount} -eq 1 ]; then
+            site=${portShavedName}
+            links="[http://$site http] "
+            links+=" ([https://$site https])"
+        else
+            echo "Not sure what to do"
+        fi
+    fi
+
+    # see if there is an ssl conf associated with it
+    sslconf=$(echo "$conf" | sed -e 's/\.conf$/-le-ssl.conf/')
+    if [ -f $sslconf ]; then
+        links+=" ([https://$site https])"
+    fi
+
+    confa['#']="${cntr}"
+    confa['site']="<span style=\"color: $color;\">${site}</span>"
+    confa['docroot']="${docroot}"
+    confa['links']="${links}"
+
+    #vwv="/var/www/vhosts/$site"
+    for vwv in $(find /var/www -maxdepth 1 -type d -name 'vhosts*'); do
+        grit="${vwv}/${site}/.grit"
+        [ -d "${grit}" ] && { decho "found grit dir for site: $grit"; break; }
+    done
+
+
+    for f in $gritFields; do
+        confa[$f]=
+    done
+
+    if [ -d "${grit}" ]; then
+        for f in $gritFields; do
+            varname=grit_${f}
+            # echo "varname: $varname, ${grit}/${f}"
+            [ -f "${grit}/${f}" ] &&  confa[$f]=$(cat "${grit}/${f}" | sed ':a;N;$!ba;s/\n/<br>/g')
+        done
+    fi
+
+    echo "|-"
+
+    sep='|'
+    for f in $dispFields; do
+        printf "${sep}${confa[$f]}"
+        sep='||'
+    done
+    printf "\n"
+
+}
 ################################################################################
 wisc_apache_wiki_table(){
     repeat 80 '#'; echo
@@ -117,68 +179,11 @@ wisc_apache_wiki_table(){
     printf "\n"
 
     cntr=0
+    color=green
     while read conf; do
         ((cntr++))
         #echo "** enabled conf: $conf"
-        sites=$(cat $conf | grep -v '^ *#' | grep 'ServerName' | sed -e 's/^.*ServerName  *//' | sort -u)
-        docroot=$(cat $conf | grep -v '^ *#' | grep 'DocumentRoot' | sed -e 's/^.*DocumentRoot  *//' | sort -u | sed ':a;N;$!ba;s/\n/<br>/g')
-
-        svnamesCount=$(echo "${sites}" | wc -l | tr -d ' ')
-        if [ ${svnamesCount} -eq 1 ]; then
-            site=$sites
-            links="[http://$site http] "
-        else
-            # see if we have an https def in same file
-            portShavedName=$(echo "$sites" | sed -e 's/:443$//' | sort | uniq)
-            portShavedCount=$(echo "${portShavedName}" | wc -l | tr -d ' ')
-
-            if [ ${portShavedCount} -eq 1 ]; then
-                site=${portShavedName}
-                links="[http://$site http] "
-                links+=" ([https://$site https])"
-            else
-                echo "Not sure what to do"
-            fi
-        fi
-
-        # see if there is an ssl conf associated with it
-        sslconf=$(echo "$conf" | sed -e 's/\.conf$/-le-ssl.conf/')
-        if [ -f $sslconf ]; then
-            links+=" ([https://$site https])"
-        fi
-
-        confa['#']="${cntr}"
-        confa['site']="${site}"
-        confa['docroot']="${docroot}"
-        confa['links']="${links}"
-
-        #vwv="/var/www/vhosts/$site"
-	for vwv in $(find /var/www -maxdepth 1 -type d -name 'vhosts*'); do
-            grit="${vwv}/${site}/.grit"
-	    [ -d "${grit}" ] && { decho "found grit dir for site: $grit"; break; }
-	done
-
-
-        for f in $gritFields; do
-            confa[$f]=
-        done
-
-        if [ -d "${grit}" ]; then
-            for f in $gritFields; do
-                varname=grit_${f}
-                # echo "varname: $varname, ${grit}/${f}"
-                [ -f "${grit}/${f}" ] &&  confa[$f]=$(cat "${grit}/${f}" | sed ':a;N;$!ba;s/\n/<br>/g')
-            done
-        fi
-
-        echo "|-"
-
-        sep='|'
-        for f in $dispFields; do
-            printf "${sep}${confa[$f]}"
-            sep='||'
-        done
-        printf "\n"
+        wisc_process_apache_config "${conf}"
     done < <(find $confd -type f -name '*.conf' | sort | grep -v 'le-ssl')
     echo "|}"
     repeat 80 '#'; echo
@@ -195,6 +200,7 @@ webu_info(){
 webu_all(){
     wisc_apache_wiki_table
 }
+################################################################################
 webusc_home(){
     printf ''
     printf ''
