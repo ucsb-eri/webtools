@@ -108,6 +108,7 @@ wisc_process_apache_config(){
     confDocroot=$(cat ${conf} | grep -v '^ *#' | grep 'DocumentRoot' | sed -e 's/^.*DocumentRoot  *//' | sort -u | sed ':a;N;$!ba;s/\n/<br>/g')
 
     # when retired the sites docroot may have moved, so lets do a quick search for where it should be
+    decho "confDocroot: ${confDocroot}"
     if [ -d "${confDocroot}" ]; then
         docroot=${confDocroot}
     else
