@@ -251,10 +251,19 @@ webusc_process_nginx_config_file(){
     conf=$1; shift
     color=$1; shift
 
+    chunkdir=/tmp/webutil/chunks
+
     # This is still not setup well for having multiple, different docRoots (which can happen)
     # Maybe provide separate output for each section of the conf file???  Not simple to do though
     # almost need to split the file into sections in that case
-    #    csplit  ../00web5.msi.ucsb.edu.conf '/^<VirtualHost.*>.*$/' '{*}'
+    mkdir -p ${chunkdir}  || myExit 1 "failed to create ${chunkdir}"
+    cd ${chunkdir} || myExit 1 "failed to cd to ${chunkdir}"
+    csplit $conf '/^server.*$/' '{*}'
+    while read chunk; do
+        decho "# processing chunkfile: $chunk"
+
+
+    done < <(find ${chunkdir} -type f -name 'xx*')
     sites=$(cat ${conf} | grep -v '^ *#' | grep 'server' | sed -e 's/^.*server  *//' | sort -u)
     confDocrootCount=$(cat ${conf} | grep -v '^ *#' | grep ' root ' | sed -e 's/^.*DocumentRoot  *//' | sort -u | sed ':a;N;$!ba;s/\n/<br>/g')
     confDocroot=$(cat ${conf} | grep -v '^ *#' | grep 'DocumentRoot' | sed -e 's/^.*DocumentRoot  *//' | sort -u | sed ':a;N;$!ba;s/\n/<br>/g')
@@ -421,6 +430,8 @@ webusc_apache_wiki_table(){
 webusc_all(){
     repeat 80 '#'; echo
     webusc_apache_wiki_table
+    echo ""
+    echo ""
     webusc_nginx_wiki_table
     repeat 80 '#'; echo
 }
