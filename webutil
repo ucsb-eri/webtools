@@ -96,7 +96,7 @@ webusc_help(){
         fi
     done
 
-    subcommand_prefix="wisc_"
+    subcommand_prefix="webusc_"
     if [ "$self" ]; then
         sclist=`grep ')' $self | egrep "$subcommand_prefix" | grep -v '(' | cut -d ')' -f 1 | tr -d ' ' | grep -v '^[-*]'`
         echo "" > $thelp
@@ -117,11 +117,15 @@ webusc_help(){
     fi
     echo ""
     cat $thelp
-    eriu_sc_help_info
+    webusc_help_info
 
 }
 ################################################################################
-wisc_apache_wiki_ul(){
+webusc_help_info(){
+    printf ''
+}
+################################################################################
+webusc_apache_wiki_ul(){
     echo "** enabled sites:"
     while read conf; do
         buf=
@@ -146,7 +150,7 @@ wisc_apache_wiki_ul(){
     done < <(find $confd -type f -name '*.conf' | sort | grep -v 'le-ssl')
 }
 ################################################################################
-wisc_process_apache_config(){
+webusc_process_apache_config(){
     conf=$1; shift
     color=$1; shift
 
@@ -235,7 +239,7 @@ wisc_process_apache_config(){
 
 }
 ################################################################################
-wisc_apache_wiki_table(){
+webusc_apache_wiki_table(){
     repeat 80 '#'; echo
     gritFields="stakeholders notes status"
     dispFields="# site links docroot $gritFields"
@@ -260,29 +264,21 @@ wisc_apache_wiki_table(){
         echo "$conf" | egrep -qi 'retired' && color='red'
         echo "$conf" | egrep -qi 'migrated' && color='orange'
 
-        wisc_process_apache_config "${conf}" "${color}"
+        webusc_process_apache_config "${conf}" "${color}"
     done < <(find $confd -type f -name '*.conf' | sort | grep -v 'le-ssl')
 
     # # Pull retired
     # while read conf; do
     #     ((cntr++))
     #     #echo "** enabled conf: $conf"
-    #     wisc_process_apache_config "${conf}"
+    #     webusc_process_apache_config "${conf}"
     # done < <(find $confd -type f -name '*.conf' | sort | grep -v 'le-ssl')
     echo "|}"
     repeat 80 '#'; echo
 }
 ################################################################################
-webu_help(){
-    echo "to be completed later"
-}
-################################################################################
-webu_info(){
-    echo "to be completed later"
-}
-################################################################################
-webu_all(){
-    wisc_apache_wiki_table
+webusc_all(){
+    webusc_apache_wiki_table
 }
 ################################################################################
 webusc_home(){
@@ -331,7 +327,7 @@ webusc_change_site_status(){
 ################################################################################
 ################################################################################
 
-#wisc_apache_wiki_ul
+#webusc_apache_wiki_ul
 
 while [ $# -ge 1 ]; do
     case $1 in
@@ -361,7 +357,7 @@ fi
 
 # make sure that any subcommand uses a consistent prefix that can be matched by the aeusc_help system
 case $subcommand in
-    all)         webu_all "$@" ;;
+    all)         webusc_all "$@" ;;
     info)        webusc_info "$@" ;;
     home)        webusc_home "$@" ;;
     retire)      webusc_change_site_status "retire" "$@" ;;
