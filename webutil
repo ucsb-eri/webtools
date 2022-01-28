@@ -242,8 +242,12 @@ webusc_process_apache_config(){
     printf "\n"
 
 }
+webusc_process_nginx_config_chunk(){
+    conf=$1; shift
+    color=$1; shift
+}
 ################################################################################
-webusc_process_nginx_config(){
+webusc_process_nginx_config_file(){
     conf=$1; shift
     color=$1; shift
 
@@ -251,8 +255,12 @@ webusc_process_nginx_config(){
     # Maybe provide separate output for each section of the conf file???  Not simple to do though
     # almost need to split the file into sections in that case
     #    csplit  ../00web5.msi.ucsb.edu.conf '/^<VirtualHost.*>.*$/' '{*}'
-    sites=$(cat ${conf} | grep -v '^ *#' | grep 'ServerName' | sed -e 's/^.*ServerName  *//' | sort -u)
+    sites=$(cat ${conf} | grep -v '^ *#' | grep 'server' | sed -e 's/^.*server  *//' | sort -u)
+    confDocrootCount=$(cat ${conf} | grep -v '^ *#' | grep ' root ' | sed -e 's/^.*DocumentRoot  *//' | sort -u | sed ':a;N;$!ba;s/\n/<br>/g')
     confDocroot=$(cat ${conf} | grep -v '^ *#' | grep 'DocumentRoot' | sed -e 's/^.*DocumentRoot  *//' | sort -u | sed ':a;N;$!ba;s/\n/<br>/g')
+
+    # if we have more than one root, lets split on servers
+
 
     # when retired the sites docroot may have moved, so lets do a quick search for where it should be
     decho "confDocroot: ${confDocroot}"
@@ -336,14 +344,14 @@ webusc_process_nginx_config(){
 
 }
 ################################################################################
-webusc_apache_wiki_table(){
-    repeat 80 '#'; echo
+webu_internal_wiki_table_preflight(){
     gritFields="stakeholders notes status"
     dispFields="# site links docroot $gritFields"
     numCols=$(echo "$dispFields" | wc -w | sed 's/ //g')
-    echo "{| class=\"wikitable inventory\""
-    echo "!colspan=\"${numCols}\"|${host}: apache/httpd configuration"
 
+    # Start new wiki table
+    echo "{| class=\"wikitable inventory\""
+    echo "!colspan=\"${numCols}\"|${host}: ${label}"
     echo "|-"
     sep='!'
     for fld in $dispFields; do
@@ -351,6 +359,43 @@ webusc_apache_wiki_table(){
         sep='!!'
     done
     printf "\n"
+
+}
+################################################################################
+webusc_nginx_wiki_table(){
+    label="nginx configuration"
+    webu_internal_wiki_table_preflight
+
+    while read conf; do
+        decho "# processing nginx conf: $conf"
+        ((cntr++))
+        #echo "** enabled conf: $conf"
+        color='green'
+        echo "$conf" | egrep -qi 'retired' && color='red'
+        echo "$conf" | egrep -qi 'migrated' && color='orange'
+
+        webusc_process_nginx_config_file "${conf}" "${color}"
+    done < <(find /etc/nginx/*.d -type f -name '*.conf' | sort )
+}
+################################################################################
+webusc_apache_wiki_table(){
+    label="apache/httpd configuration"
+    webu_internal_wiki_table_preflight
+    # repeat 80 '#'; echo
+    # gritFields="stakeholders notes status"
+    # dispFields="# site links docroot $gritFields"
+    # numCols=$(echo "$dispFields" | wc -w | sed 's/ //g')
+    #
+    # # Start new wiki table
+    # echo "{| class=\"wikitable inventory\""
+    # echo "!colspan=\"${numCols}\"|${host}: ${label}"
+    # echo "|-"
+    # sep='!'
+    # for fld in $dispFields; do
+    #     printf "${sep}${fld}"
+    #     sep='!!'
+    # done
+    # printf "\n"
 
     cntr=0
     # color=green
@@ -364,9 +409,6 @@ webusc_apache_wiki_table(){
         webusc_process_apache_config "${conf}" "${color}"
     done < <(find $confd -type f -name '*.conf' | sort | grep -v 'le-ssl')
 
-    while read conf; do
-        decho "# processing nginx conf: $conf"
-    done < <(find /etc/nginx/*.d -type f -name '*.conf' | sort )
     # # Pull retired
     # while read conf; do
     #     ((cntr++))
@@ -374,11 +416,13 @@ webusc_apache_wiki_table(){
     #     webusc_process_apache_config "${conf}"
     # done < <(find $confd -type f -name '*.conf' | sort | grep -v 'le-ssl')
     echo "|}"
-    repeat 80 '#'; echo
 }
 ################################################################################
 webusc_all(){
+    repeat 80 '#'; echo
     webusc_apache_wiki_table
+    webusc_nginx_wiki_table
+    repeat 80 '#'; echo
 }
 ################################################################################
 webusc_home(){
