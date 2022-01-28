@@ -259,6 +259,7 @@ webusc_process_nginx_config_file(){
     # almost need to split the file into sections in that case
     mkdir -p ${chunkdir}  || myExit 1 "failed to create ${chunkdir}"
     cd ${chunkdir} || myExit 1 "failed to cd to ${chunkdir}"
+    rm -f xx*
     csplit $conf '/^server.*$/' '{*}' > /dev/null 2>&1
     # http and https are gonna be in different chunks, not sure how to handle that yet
     while read chunk; do
@@ -285,23 +286,23 @@ webusc_process_nginx_config_file(){
         fi
         deecho "docroot: $docroot"
 
-        svnamesCount=$(echo "${sites}" | wc -l | tr -d ' ')
-        if [ ${svnamesCount} -eq 1 ]; then
-            site=$sites
-            links="[http://${site} http] "
-        else
-            # see if we have an https def in same file
-            portShavedName=$(echo "$sites" | sed -e 's/:443$//' | sort | uniq)
-            portShavedCount=$(echo "${portShavedName}" | wc -l | tr -d ' ')
-
-            if [ ${portShavedCount} -eq 1 ]; then
-                site=${portShavedName}
-                links="[http://$site http] "
-                links+=" ([https://$site https])"
-            else
-                deecho "Not sure what to do"
-            fi
-        fi
+        # svnamesCount=$(echo "${sites}" | wc -l | tr -d ' ')
+        # if [ ${svnamesCount} -eq 1 ]; then
+        #     site=$sites
+        #     links="[http://${site} http] "
+        # else
+        #     # see if we have an https def in same file
+        #     portShavedName=$(echo "$sites" | sed -e 's/:443$//' | sort | uniq)
+        #     portShavedCount=$(echo "${portShavedName}" | wc -l | tr -d ' ')
+        #
+        #     if [ ${portShavedCount} -eq 1 ]; then
+        #         site=${portShavedName}
+        #         links="[http://$site http] "
+        #         links+=" ([https://$site https])"
+        #     else
+        #         deecho "Not sure what to do"
+        #     fi
+        # fi
 
         # see if there is an ssl conf associated with it
 
@@ -332,7 +333,8 @@ webusc_process_nginx_config_file(){
         #     [ -d "${grit}" ] && { decho "found grit dir for site: $grit"; break; }
         # done
 
-        # clear confa grit field entries
+        # Fill in any grit field entries
+        # clear any existing confa grit field values
         for f in $gritFields; do
             confa[$f]=
         done
