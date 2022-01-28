@@ -259,7 +259,7 @@ webusc_process_nginx_config_file(){
     # almost need to split the file into sections in that case
     mkdir -p ${chunkdir}  || myExit 1 "failed to create ${chunkdir}"
     cd ${chunkdir} || myExit 1 "failed to cd to ${chunkdir}"
-    csplit $conf '/^server.*$/' '{*}' > /dev/null
+    csplit $conf '/^server.*$/' '{*}' > /dev/null 2>&1
     while read chunk; do
         ((cntr++))
         decho "# processing chunkfile: $chunk"
