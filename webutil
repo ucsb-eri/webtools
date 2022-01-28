@@ -266,6 +266,9 @@ webusc_process_nginx_config_file(){
         sites=$(cat ${chunk} | grep -v '^ *#' | grep 'server_name' | sed -e 's/^.*server_name  *//' -e 's/;//g' | sort -u)
         confDocroot=$(cat ${chunk} | grep -v '^ *#' | grep 'root' | grep -v 'document_root' | sed -e 's/^.*root  *//'  -e 's/;//g' | sort -u | sed ':a;N;$!ba;s/\n/<br>/g')
 
+        # If we dont have a server_name, skip to next
+        [ -n "${sites}" ] || continue
+
         deecho "sites: ${sites}"
         deecho "confDocroot: ${confDocroot}"
         docroot=
@@ -388,6 +391,7 @@ webusc_nginx_wiki_table(){
 
         webusc_process_nginx_config_file "${conf}" "${color}"
     done < <(find /etc/nginx/*.d -type f -name '*.conf' | sort )
+    echo "|}"
 }
 ################################################################################
 webusc_apache_wiki_table(){
