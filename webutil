@@ -264,8 +264,8 @@ webusc_process_nginx_config_file(){
         sites=$(cat ${chunk} | grep -v '^ *#' | grep 'server_name' | sed -e 's/^.*server_name  *//' -e 's/;//g' | sort -u)
         confDocroot=$(cat ${chunk} | grep -v '^ *#' | grep 'root' | grep -v 'document_root' | sed -e 's/^.*root  *//'  -e 's/;//g' | sort -u | sed ':a;N;$!ba;s/\n/<br>/g')
 
-        eecho "sites: ${sites}"
-        eecho "confDocroot: ${confDocroot}"
+        deecho "sites: ${sites}"
+        deecho "confDocroot: ${confDocroot}"
         docroot=
         if [ -d "${confDocroot}" ]; then
             docroot=${confDocroot}
@@ -276,7 +276,7 @@ webusc_process_nginx_config_file(){
                 [ -d "${altDocroot}" ] && { docroot="${altDocroot}"; break; }
             done
         fi
-        eecho "docroot: $docroot"
+        deecho "docroot: $docroot"
 
         svnamesCount=$(echo "${sites}" | wc -l | tr -d ' ')
         if [ ${svnamesCount} -eq 1 ]; then
@@ -292,7 +292,7 @@ webusc_process_nginx_config_file(){
                 links="[http://$site http] "
                 links+=" ([https://$site https])"
             else
-                eecho "Not sure what to do"
+                deecho "Not sure what to do"
             fi
         fi
 
