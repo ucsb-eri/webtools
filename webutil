@@ -262,9 +262,10 @@ webusc_process_nginx_config_file(){
     while read chunk; do
         decho "# processing chunkfile: $chunk"
         sites=$(cat ${conf} | grep -v '^ *#' | grep 'server_name' | sed -e 's/^.*server_name  *//' -e 's/;//g' | sort -u)
-        confDocroot=$(cat ${conf} | grep -v '^ *#' | grep 'root' | sed -e 's/^.*root  *//'  -e 's/;//g' | sort -u | sed ':a;N;$!ba;s/\n/<br>/g')
+        confDocroot=$(cat ${conf} | grep -v '^ *#' | grep 'root' | grep -v 'document_root' | sed -e 's/^.*root  *//'  -e 's/;//g' | sort -u | sed ':a;N;$!ba;s/\n/<br>/g')
 
-        decho "confDocroot: ${confDocroot}"
+        eecho "sites: ${sites}"
+        eecho "confDocroot: ${confDocroot}"
         docroot=
         if [ -d "${confDocroot}" ]; then
             docroot=${confDocroot}
@@ -275,12 +276,12 @@ webusc_process_nginx_config_file(){
                 [ -d "${altDocroot}" ] && { docroot="${altDocroot}"; break; }
             done
         fi
-        decho "docroot: $docroot"
+        eecho "docroot: $docroot"
 
         svnamesCount=$(echo "${sites}" | wc -l | tr -d ' ')
         if [ ${svnamesCount} -eq 1 ]; then
             site=$sites
-            links="[http://$site http] "
+            links="[http://${site} http] "
         else
             # see if we have an https def in same file
             portShavedName=$(echo "$sites" | sed -e 's/:443$//' | sort | uniq)
@@ -291,7 +292,7 @@ webusc_process_nginx_config_file(){
                 links="[http://$site http] "
                 links+=" ([https://$site https])"
             else
-                echo "Not sure what to do"
+                eecho "Not sure what to do"
             fi
         fi
 
