@@ -261,13 +261,12 @@ webusc_process_nginx_config_file(){
     cd ${chunkdir} || myExit 1 "failed to cd to ${chunkdir}"
     csplit $conf '/^server.*$/' '{*}' > /dev/null 2>&1
     while read chunk; do
-        ((cntr++))
         decho "# processing chunkfile: $chunk"
         sites=$(cat ${chunk} | grep -v '^ *#' | grep 'server_name' | sed -e 's/^.*server_name  *//' -e 's/;//g' | sort -u)
         confDocroot=$(cat ${chunk} | grep -v '^ *#' | grep 'root' | grep -v 'document_root' | sed -e 's/^.*root  *//'  -e 's/;//g' | sort -u | sed ':a;N;$!ba;s/\n/<br>/g')
 
-        # If we dont have a server_name, skip to next
-        [ -n "${sites}" ] || continue
+        [ -n "${sites}" ] || continue    # If we dont have a server_name, skip to next
+        ((cntr++))                       # increase counter if we are gonna use this chunk
 
         deecho "sites: ${sites}"
         deecho "confDocroot: ${confDocroot}"
