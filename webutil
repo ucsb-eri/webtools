@@ -305,7 +305,7 @@ webusc_process_nginx_config_file(){
         # fi
 
         # see if there is an ssl conf associated with it
-
+        links=
         if [ ${port} = '80' ]; then
             links+=" ([http://$site http])"
         fi
