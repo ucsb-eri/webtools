@@ -75,6 +75,52 @@ repeat(){
 	for i in $range ; do echo -n "${str}"; done
 }
 ################################################################################
+webusc_help(){
+    thelp="/tmp/zfsutil-help.$$"
+    echo "$usage"
+    echo "  --verbose - verbose output turned on"
+    echo "  --debug   - debugging output turned on"
+    echo ""
+    echo "where subcommand is one of the following:"
+
+    # see if invoked with absolute or relative path
+    if [ -x $0 ]; then
+        self=$0
+    fi
+
+    # check path entries to see about finding
+    for pentry in `echo $PATH | tr ':' ' '`
+    do
+        if [ -f ${pentry}/$exe ]; then
+            self=${pentry}/$exe
+        fi
+    done
+
+    subcommand_prefix="wisc_"
+    if [ "$self" ]; then
+        sclist=`grep ')' $self | egrep "$subcommand_prefix" | grep -v '(' | cut -d ')' -f 1 | tr -d ' ' | grep -v '^[-*]'`
+        echo "" > $thelp
+        for sc in $sclist
+        do
+            printf "  $sc\n"
+            #regex="'^#.*${subcommand_prefix}${sc}'"
+            #egrep -E $regex $self >> $thelp
+            #egrep -E $regex $self
+            #echo "$regex"
+        done
+        cat $thelp
+        #regex="^# ${subcommand_prefix}'"
+        # would love to set this up to use printf
+        egrep "^# ${subcommand_prefix}" $self | sed -e "s/^# ${subcommand_prefix}/  /" > $thelp
+    else
+        echo "error finding self, PATH must not be set correctly"
+    fi
+    echo ""
+    cat $thelp
+    eriu_sc_help_info
+
+}
+################################################################################
 wisc_apache_wiki_ul(){
     echo "** enabled sites:"
     while read conf; do
@@ -212,7 +258,7 @@ wisc_apache_wiki_table(){
         #echo "** enabled conf: $conf"
         color='green'
         echo "$conf" | egrep -qi 'retired' && color='red'
-        echo "$conf" | egrep -qi 'migrated' && color='yellow'
+        echo "$conf" | egrep -qi 'migrated' && color='orange'
 
         wisc_process_apache_config "${conf}" "${color}"
     done < <(find $confd -type f -name '*.conf' | sort | grep -v 'le-ssl')
@@ -243,6 +289,7 @@ webusc_home(){
     printf ''
     printf ''
 }
+################################################################################
 webusc_change_site_status(){
     mode=$1; shift
 
