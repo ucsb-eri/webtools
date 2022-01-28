@@ -271,6 +271,7 @@ webusc_process_nginx_config_file(){
         ((cntr++))                       # increase counter if we are gonna use this chunk
 
         deecho "sites: ${sites}"
+        deecho "port: ${port}"
         deecho "confDocroot: ${confDocroot}"
         docroot=
         if [ -d "${confDocroot}" ]; then
@@ -304,10 +305,10 @@ webusc_process_nginx_config_file(){
 
         # see if there is an ssl conf associated with it
 
-        if [ ${port} -eq 80 ]; then
+        if [ ${port} = '80' ]; then
             links+=" ([http://$site http])"
         fi
-        if [ ${port} -eq 443 ]; then
+        if [ ${port} = '443' ]; then
             links+=" ([https://$site https])"
         fi
 
