@@ -261,95 +261,95 @@ webusc_process_nginx_config_file(){
     csplit $conf '/^server.*$/' '{*}'
     while read chunk; do
         decho "# processing chunkfile: $chunk"
+        sites=$(cat ${conf} | grep -v '^ *#' | grep 'server' | sed -e 's/^.*server  *//' | sort -u)
+        confDocroot=$(cat ${conf} | grep -v '^ *#' | grep 'root' | sed -e 's/^.*root  *//' | sort -u | sed ':a;N;$!ba;s/\n/<br>/g')
 
+        decho "confDocroot: ${confDocroot}"
+        docroot=
+        if [ -d "${confDocroot}" ]; then
+            docroot=${confDocroot}
+        else
+            for alt in .zRetired .zMigrated; do
+                altDocroot=$(echo ${confDocroot} | sed -E -e 's:/var/www/vhosts([^/]*)/(.*$):/var/www/vhosts\1/'$alt'/\2:')
+                decho "altDocroot: ${altDocroot}"
+                [ -d "${altDocroot}" ] && { docroot="${altDocroot}"; break; }
+            done
+        fi
+        decho "docroot: $docroot"
+
+        svnamesCount=$(echo "${sites}" | wc -l | tr -d ' ')
+        if [ ${svnamesCount} -eq 1 ]; then
+            site=$sites
+            links="[http://$site http] "
+        else
+            # see if we have an https def in same file
+            portShavedName=$(echo "$sites" | sed -e 's/:443$//' | sort | uniq)
+            portShavedCount=$(echo "${portShavedName}" | wc -l | tr -d ' ')
+
+            if [ ${portShavedCount} -eq 1 ]; then
+                site=${portShavedName}
+                links="[http://$site http] "
+                links+=" ([https://$site https])"
+            else
+                echo "Not sure what to do"
+            fi
+        fi
+
+        # see if there is an ssl conf associated with it
+        sslconf=$(echo "$conf" | sed -e 's/\.conf$/-le-ssl.conf/')
+        if [ -f $sslconf ]; then
+            links+=" ([https://$site https])"
+        fi
+
+        confa['#']="${cntr}"
+        confa['site']="<span style=\"color: $color;\">${site}</span>"
+        confa['docroot']="${docroot}"
+        confa['links']="${links}"
+
+        #vwv="/var/www/vhosts/$site"
+        # original was not best way to locate .grit folder if we are moving stuff around
+        start="${docroot}"
+        grit=
+        while [ "${start}" != "/" -a "${start}" != "" ]; do
+            ckgrit="${start}/.grit"
+            decho "checking .grit path: $ckgrit"
+            [ -d "${ckgrit}" ] && { grit="${ckgrit}"; break; }
+            start=$(dirname "${start}")
+        done
+        # for vwv in $(find /var/www -maxdepth 1 -type d -name 'vhosts*'); do
+        #     grit="${vwv}/${site}/.grit"
+        #     [ -d "${grit}" ] && { decho "found grit dir for site: $grit"; break; }
+        # done
+
+
+        for f in $gritFields; do
+            confa[$f]=
+        done
+
+        if [ -d "${grit}" ]; then
+            for f in $gritFields; do
+                varname=grit_${f}
+                # echo "varname: $varname, ${grit}/${f}"
+                [ -f "${grit}/${f}" ] &&  confa[$f]=$(cat "${grit}/${f}" | sed ':a;N;$!ba;s/\n/<br>/g')
+            done
+        fi
+
+        echo "|-"
+
+        sep='|'
+        for f in $dispFields; do
+            printf "${sep}${confa[$f]}"
+            sep='||'
+        done
+        printf "\n"
 
     done < <(find ${chunkdir} -type f -name 'xx*')
-    sites=$(cat ${conf} | grep -v '^ *#' | grep 'server' | sed -e 's/^.*server  *//' | sort -u)
-    confDocrootCount=$(cat ${conf} | grep -v '^ *#' | grep ' root ' | sed -e 's/^.*DocumentRoot  *//' | sort -u | sed ':a;N;$!ba;s/\n/<br>/g')
-    confDocroot=$(cat ${conf} | grep -v '^ *#' | grep 'DocumentRoot' | sed -e 's/^.*DocumentRoot  *//' | sort -u | sed ':a;N;$!ba;s/\n/<br>/g')
+    # confDocrootCount=$(cat ${conf} | grep -v '^ *#' | grep ' root ' | sed -e 's/^.*root  *//' | sort -u | sed ':a;N;$!ba;s/\n/<br>/g')
 
     # if we have more than one root, lets split on servers
 
 
     # when retired the sites docroot may have moved, so lets do a quick search for where it should be
-    decho "confDocroot: ${confDocroot}"
-    docroot=
-    if [ -d "${confDocroot}" ]; then
-        docroot=${confDocroot}
-    else
-        for alt in .zRetired .zMigrated; do
-            altDocroot=$(echo ${confDocroot} | sed -E -e 's:/var/www/vhosts([^/]*)/(.*$):/var/www/vhosts\1/'$alt'/\2:')
-            decho "altDocroot: ${altDocroot}"
-            [ -d "${altDocroot}" ] && { docroot="${altDocroot}"; break; }
-        done
-    fi
-    decho "docroot: $docroot"
-
-    svnamesCount=$(echo "${sites}" | wc -l | tr -d ' ')
-    if [ ${svnamesCount} -eq 1 ]; then
-        site=$sites
-        links="[http://$site http] "
-    else
-        # see if we have an https def in same file
-        portShavedName=$(echo "$sites" | sed -e 's/:443$//' | sort | uniq)
-        portShavedCount=$(echo "${portShavedName}" | wc -l | tr -d ' ')
-
-        if [ ${portShavedCount} -eq 1 ]; then
-            site=${portShavedName}
-            links="[http://$site http] "
-            links+=" ([https://$site https])"
-        else
-            echo "Not sure what to do"
-        fi
-    fi
-
-    # see if there is an ssl conf associated with it
-    sslconf=$(echo "$conf" | sed -e 's/\.conf$/-le-ssl.conf/')
-    if [ -f $sslconf ]; then
-        links+=" ([https://$site https])"
-    fi
-
-    confa['#']="${cntr}"
-    confa['site']="<span style=\"color: $color;\">${site}</span>"
-    confa['docroot']="${docroot}"
-    confa['links']="${links}"
-
-    #vwv="/var/www/vhosts/$site"
-    # original was not best way to locate .grit folder if we are moving stuff around
-    start="${docroot}"
-    grit=
-    while [ "${start}" != "/" -a "${start}" != "" ]; do
-        ckgrit="${start}/.grit"
-        decho "checking .grit path: $ckgrit"
-        [ -d "${ckgrit}" ] && { grit="${ckgrit}"; break; }
-        start=$(dirname "${start}")
-    done
-    # for vwv in $(find /var/www -maxdepth 1 -type d -name 'vhosts*'); do
-    #     grit="${vwv}/${site}/.grit"
-    #     [ -d "${grit}" ] && { decho "found grit dir for site: $grit"; break; }
-    # done
-
-
-    for f in $gritFields; do
-        confa[$f]=
-    done
-
-    if [ -d "${grit}" ]; then
-        for f in $gritFields; do
-            varname=grit_${f}
-            # echo "varname: $varname, ${grit}/${f}"
-            [ -f "${grit}/${f}" ] &&  confa[$f]=$(cat "${grit}/${f}" | sed ':a;N;$!ba;s/\n/<br>/g')
-        done
-    fi
-
-    echo "|-"
-
-    sep='|'
-    for f in $dispFields; do
-        printf "${sep}${confa[$f]}"
-        sep='||'
-    done
-    printf "\n"
 
 }
 ################################################################################
