@@ -261,8 +261,8 @@ webusc_process_nginx_config_file(){
     csplit $conf '/^server.*$/' '{*}'
     while read chunk; do
         decho "# processing chunkfile: $chunk"
-        sites=$(cat ${conf} | grep -v '^ *#' | grep 'server_name' | sed -e 's/^.*server_name  *//' -e 's/;//g' | sort -u)
-        confDocroot=$(cat ${conf} | grep -v '^ *#' | grep 'root' | grep -v 'document_root' | sed -e 's/^.*root  *//'  -e 's/;//g' | sort -u | sed ':a;N;$!ba;s/\n/<br>/g')
+        sites=$(cat ${chunk} | grep -v '^ *#' | grep 'server_name' | sed -e 's/^.*server_name  *//' -e 's/;//g' | sort -u)
+        confDocroot=$(cat ${chunk} | grep -v '^ *#' | grep 'root' | grep -v 'document_root' | sed -e 's/^.*root  *//'  -e 's/;//g' | sort -u | sed ':a;N;$!ba;s/\n/<br>/g')
 
         eecho "sites: ${sites}"
         eecho "confDocroot: ${confDocroot}"
