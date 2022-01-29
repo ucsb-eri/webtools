@@ -286,23 +286,22 @@ webusc_process_nginx_config_file(){
         fi
         deecho "docroot: $docroot"
 
-        # svnamesCount=$(echo "${sites}" | wc -l | tr -d ' ')
-        # if [ ${svnamesCount} -eq 1 ]; then
-        #     site=$sites
-        #     links="[http://${site} http] "
-        # else
-        #     # see if we have an https def in same file
-        #     portShavedName=$(echo "$sites" | sed -e 's/:443$//' | sort | uniq)
-        #     portShavedCount=$(echo "${portShavedName}" | wc -l | tr -d ' ')
-        #
-        #     if [ ${portShavedCount} -eq 1 ]; then
-        #         site=${portShavedName}
-        #         links="[http://$site http] "
-        #         links+=" ([https://$site https])"
-        #     else
-        #         deecho "Not sure what to do"
-        #     fi
-        # fi
+        svnamesCount=$(echo "${sites}" | wc -l | tr -d ' ')
+        if [ ${svnamesCount} -eq 1 ]; then
+            site=$sites
+        else
+            # see if we have an https def in same file
+            portShavedName=$(echo "$sites" | sed -e 's/:443$//' | sort | uniq)
+            portShavedCount=$(echo "${portShavedName}" | wc -l | tr -d ' ')
+
+            if [ ${portShavedCount} -eq 1 ]; then
+                site=${portShavedName}
+                # links="[http://$site http] "
+                # links+=" ([https://$site https])"
+            else
+                deecho "Not sure what to do"
+            fi
+        fi
 
         # see if there is an ssl conf associated with it
         links=
