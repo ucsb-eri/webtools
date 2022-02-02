@@ -207,6 +207,7 @@ webusc_process_apache_config(){
     webufunc_get_grit_info
     webufunc_output_info
 }
+################################################################################
 webufunc_get_grit_info(){
     # try to locate a grit folder associated with the docroot in question, this one checks UP the path
     deecho "# Checking upward for .grit directory"
@@ -237,7 +238,7 @@ webufunc_get_grit_info(){
         for f in $gritFields; do
             varname=grit_${f}
             # echo "varname: $varname, ${grit}/${f}"
-            [ -f "${grit}/${f}" ] &&  confa[$f]=$(cat "${grit}/${f}" | sed ':a;N;$!ba;s/\n/<br>/g')
+            [ -f "${grit}/${f}" ] &&  { confa[$f]=$(cat "${grit}/${f}" | sed ':a;N;$!ba;s/\n/<br>/g'); deecho "# Setting $f from file: ${grit}/${f}"; }
         done
     fi
 
@@ -331,52 +332,7 @@ webusc_process_nginx_config_file(){
 
         webufunc_get_grit_info
         webufunc_output_info
-        # #vwv="/var/www/vhosts/$site"
-        # # original was not best way to locate .grit folder if we are moving stuff around
-        # start="${docroot}"
-        # grit=
-        # while [ "${start}" != "/" -a "${start}" != "" ]; do
-        #     ckgrit="${start}/.grit"
-        #     decho "checking .grit path: $ckgrit"
-        #     [ -d "${ckgrit}" ] && { grit="${ckgrit}"; break; }
-        #     start=$(dirname "${start}")
-        # done
-        # # for vwv in $(find /var/www -maxdepth 1 -type d -name 'vhosts*'); do
-        # #     grit="${vwv}/${site}/.grit"
-        # #     [ -d "${grit}" ] && { decho "found grit dir for site: $grit"; break; }
-        # # done
-        #
-        # # Fill in any grit field entries
-        # # clear any existing confa grit field values
-        # for f in $gritFields; do
-        #     confa[$f]=
-        # done
-        #
-        # if [ -d "${grit}" ]; then
-        #     for f in $gritFields; do
-        #         varname=grit_${f}
-        #         # echo "varname: $varname, ${grit}/${f}"
-        #         [ -f "${grit}/${f}" ] &&  confa[$f]=$(cat "${grit}/${f}" | sed ':a;N;$!ba;s/\n/<br>/g')
-        #     done
-        # fi
-        #
-        # echo "|-"
-        #
-        # sep='|'
-        # for f in $dispFields; do
-        #     printf "${sep}${confa[$f]}"
-        #     sep='||'
-        # done
-        # printf "\n"
-
     done < <(find ${chunkdir} -type f -name 'xx*')
-    # confDocrootCount=$(cat ${conf} | grep -v '^ *#' | grep ' root ' | sed -e 's/^.*root  *//' | sort -u | sed ':a;N;$!ba;s/\n/<br>/g')
-
-    # if we have more than one root, lets split on servers
-
-
-    # when retired the sites docroot may have moved, so lets do a quick search for where it should be
-
 }
 ################################################################################
 webu_internal_wiki_table_preflight(){
@@ -417,21 +373,6 @@ webusc_nginx_wiki_table(){
 webusc_apache_wiki_table(){
     label="apache/httpd configuration"
     webu_internal_wiki_table_preflight
-    # repeat 80 '#'; echo
-    # gritFields="stakeholders notes status"
-    # dispFields="# site links docroot $gritFields"
-    # numCols=$(echo "$dispFields" | wc -w | sed 's/ //g')
-    #
-    # # Start new wiki table
-    # echo "{| class=\"wikitable inventory\""
-    # echo "!colspan=\"${numCols}\"|${host}: ${label}"
-    # echo "|-"
-    # sep='!'
-    # for fld in $dispFields; do
-    #     printf "${sep}${fld}"
-    #     sep='!!'
-    # done
-    # printf "\n"
 
     cntr=0
     # color=green
