@@ -207,6 +207,7 @@ webusc_process_apache_config(){
     #vwv="/var/www/vhosts/$site"
     # original was not best way to locate .grit folder if we are moving stuff around
     # try to locate a grit folder associated with the docroot in question, this one checks UP the path
+    deecho "# Checking upward for .grit directory"
     start="${docroot}"
     grit=
     while [ "${start}" != "/" -a "${start}" != "" ]; do
