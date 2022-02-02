@@ -204,8 +204,6 @@ webusc_process_apache_config(){
     confa['docroot']="${docroot}"
     confa['links']="${links}"
 
-    #vwv="/var/www/vhosts/$site"
-    # original was not best way to locate .grit folder if we are moving stuff around
     # try to locate a grit folder associated with the docroot in question, this one checks UP the path
     deecho "# Checking upward for .grit directory"
     start="${docroot}"
@@ -226,6 +224,7 @@ webusc_process_apache_config(){
         done
     fi
 
+    # reset any saved values from previous check
     for f in $gritFields; do
         confa[$f]=
     done
@@ -238,6 +237,11 @@ webusc_process_apache_config(){
         done
     fi
 
+    webufunc_output_info
+}
+################################################################################
+webufunc_output_info(){
+    # begin output
     echo "|-"
 
     sep='|'
