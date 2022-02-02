@@ -204,6 +204,10 @@ webusc_process_apache_config(){
     confa['docroot']="${docroot}"
     confa['links']="${links}"
 
+    webufunc_get_grit_info
+    webufunc_output_info
+}
+webufunc_get_grit_info(){
     # try to locate a grit folder associated with the docroot in question, this one checks UP the path
     deecho "# Checking upward for .grit directory"
     start="${docroot}"
@@ -237,7 +241,6 @@ webusc_process_apache_config(){
         done
     fi
 
-    webufunc_output_info
 }
 ################################################################################
 webufunc_output_info(){
@@ -250,7 +253,6 @@ webufunc_output_info(){
         sep='||'
     done
     printf "\n"
-
 }
 ################################################################################
 webusc_process_nginx_config_chunk(){
@@ -327,43 +329,45 @@ webusc_process_nginx_config_file(){
         confa['docroot']="${docroot}"
         confa['links']="${links}"
 
-        #vwv="/var/www/vhosts/$site"
-        # original was not best way to locate .grit folder if we are moving stuff around
-        start="${docroot}"
-        grit=
-        while [ "${start}" != "/" -a "${start}" != "" ]; do
-            ckgrit="${start}/.grit"
-            decho "checking .grit path: $ckgrit"
-            [ -d "${ckgrit}" ] && { grit="${ckgrit}"; break; }
-            start=$(dirname "${start}")
-        done
-        # for vwv in $(find /var/www -maxdepth 1 -type d -name 'vhosts*'); do
-        #     grit="${vwv}/${site}/.grit"
-        #     [ -d "${grit}" ] && { decho "found grit dir for site: $grit"; break; }
+        webufunc_get_grit_info
+        webufunc_output_info
+        # #vwv="/var/www/vhosts/$site"
+        # # original was not best way to locate .grit folder if we are moving stuff around
+        # start="${docroot}"
+        # grit=
+        # while [ "${start}" != "/" -a "${start}" != "" ]; do
+        #     ckgrit="${start}/.grit"
+        #     decho "checking .grit path: $ckgrit"
+        #     [ -d "${ckgrit}" ] && { grit="${ckgrit}"; break; }
+        #     start=$(dirname "${start}")
         # done
-
-        # Fill in any grit field entries
-        # clear any existing confa grit field values
-        for f in $gritFields; do
-            confa[$f]=
-        done
-
-        if [ -d "${grit}" ]; then
-            for f in $gritFields; do
-                varname=grit_${f}
-                # echo "varname: $varname, ${grit}/${f}"
-                [ -f "${grit}/${f}" ] &&  confa[$f]=$(cat "${grit}/${f}" | sed ':a;N;$!ba;s/\n/<br>/g')
-            done
-        fi
-
-        echo "|-"
-
-        sep='|'
-        for f in $dispFields; do
-            printf "${sep}${confa[$f]}"
-            sep='||'
-        done
-        printf "\n"
+        # # for vwv in $(find /var/www -maxdepth 1 -type d -name 'vhosts*'); do
+        # #     grit="${vwv}/${site}/.grit"
+        # #     [ -d "${grit}" ] && { decho "found grit dir for site: $grit"; break; }
+        # # done
+        #
+        # # Fill in any grit field entries
+        # # clear any existing confa grit field values
+        # for f in $gritFields; do
+        #     confa[$f]=
+        # done
+        #
+        # if [ -d "${grit}" ]; then
+        #     for f in $gritFields; do
+        #         varname=grit_${f}
+        #         # echo "varname: $varname, ${grit}/${f}"
+        #         [ -f "${grit}/${f}" ] &&  confa[$f]=$(cat "${grit}/${f}" | sed ':a;N;$!ba;s/\n/<br>/g')
+        #     done
+        # fi
+        #
+        # echo "|-"
+        #
+        # sep='|'
+        # for f in $dispFields; do
+        #     printf "${sep}${confa[$f]}"
+        #     sep='||'
+        # done
+        # printf "\n"
 
     done < <(find ${chunkdir} -type f -name 'xx*')
     # confDocrootCount=$(cat ${conf} | grep -v '^ *#' | grep ' root ' | sed -e 's/^.*root  *//' | sort -u | sed ':a;N;$!ba;s/\n/<br>/g')
