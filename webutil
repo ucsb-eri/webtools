@@ -218,6 +218,7 @@ webusc_process_apache_config(){
 
     # if we didn't find a grit dir going UP, then lets check a few below (this is primarily for drupal multisite installs)
     if [ ! -n "${grit}" ]; then
+        deecho "# Checking downward for grit dir"
         for downward in ${docroot}/sites/${site}/.grit; do
             deecho "# Checking downward for .grit dir at: $downward"
             [ -d ${downward} ] && grit=${downward}
