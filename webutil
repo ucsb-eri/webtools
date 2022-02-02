@@ -206,6 +206,7 @@ webusc_process_apache_config(){
 
     #vwv="/var/www/vhosts/$site"
     # original was not best way to locate .grit folder if we are moving stuff around
+    # try to locate a grit folder associated with the docroot in question, this one checks UP the path
     start="${docroot}"
     grit=
     while [ "${start}" != "/" -a "${start}" != "" ]; do
@@ -214,11 +215,14 @@ webusc_process_apache_config(){
         [ -d "${ckgrit}" ] && { grit="${ckgrit}"; break; }
         start=$(dirname "${start}")
     done
-    # for vwv in $(find /var/www -maxdepth 1 -type d -name 'vhosts*'); do
-    #     grit="${vwv}/${site}/.grit"
-    #     [ -d "${grit}" ] && { decho "found grit dir for site: $grit"; break; }
-    # done
 
+    # if we didn't find a grit dir going UP, then lets check a few below (this is primarily for drupal multisite installs)
+    if [ ! -n "${grit}" ]; then
+        for downward in ${docroot}/sites/${site}/.grit; do
+            deecho "# Checking downward for .grit dir at: $downward"
+            [ -d ${downward} ] && grit=${downward}
+        done
+    fi
 
     for f in $gritFields; do
         confa[$f]=
