@@ -193,10 +193,6 @@ webusc_process_apache_config(){
         fi
     fi
 
-    if [ "$docroot" = "/usr/local/share/drupal" ]; then
-        docroot=/var/www/vhosts/${site}
-    fi
-
     # see if there is an ssl conf associated with it
     sslconf=$(echo "$conf" | sed -e 's/\.conf$/-le-ssl.conf/')
     if [ -f $sslconf ]; then
@@ -216,6 +212,11 @@ webufunc_get_grit_info(){
     # try to locate a grit folder associated with the docroot in question, this one checks UP the path
     deecho "# Checking upward for .grit directory"
     start="${docroot}"
+    
+    if [ "$start" = "/usr/local/share/drupal" ]; then
+        start=/var/www/vhosts/${site}
+    fi
+
     grit=
     while [ "${start}" != "/" -a "${start}" != "" ]; do
         ckgrit="${start}/.grit"
