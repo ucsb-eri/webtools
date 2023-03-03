@@ -221,7 +221,7 @@ webufunc_get_grit_info(){
 	done
     fi
 
-    [ -n "${start}" ] && return 0
+    [ -n "${start}" ] || return 0
     
     grit=
     while [ "${start}" != "/" -a "${start}" != "" ]; do
