@@ -214,11 +214,11 @@ webufunc_get_grit_info(){
     start="${docroot}"
     
     if [ "$start" = "/usr/local/share/drupal" ]; then
+        start=
         for s in /var/www/vhosts /var/www/vhosts/.zMigrated; do
-            start=$s/$site
-	    [ -d "$start" ] && break
+            ckdir=$s/$site
+	    [ -d "$ckdir" ] && { start=${ckdir}; break; }
 	done
-	start=
     fi
 
     [ -n "${start}" ] && return 0
