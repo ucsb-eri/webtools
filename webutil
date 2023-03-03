@@ -174,7 +174,7 @@ webusc_process_apache_config(){
         done
     fi
     decho "docroot: $docroot"
-
+    
     svnamesCount=$(echo "${sites}" | wc -l | tr -d ' ')
     if [ ${svnamesCount} -eq 1 ]; then
         site=$sites
@@ -191,6 +191,10 @@ webusc_process_apache_config(){
         else
             echo "Not sure what to do"
         fi
+    fi
+
+    if [ "$docroot" = "/usr/local/share/drupal" ]; then
+        docroot=/var/www/vhosts/${site}
     fi
 
     # see if there is an ssl conf associated with it
