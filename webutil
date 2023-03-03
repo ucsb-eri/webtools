@@ -214,9 +214,15 @@ webufunc_get_grit_info(){
     start="${docroot}"
     
     if [ "$start" = "/usr/local/share/drupal" ]; then
-        start=/var/www/vhosts/${site}
+        for s in /var/www/vhosts /var/www/vhosts/.zMigrated; do
+            start=$s/$site
+	    [ -d "$start" ] && break
+	done
+	start=
     fi
 
+    [ -n "${start}" ] && return 0
+    
     grit=
     while [ "${start}" != "/" -a "${start}" != "" ]; do
         ckgrit="${start}/.grit"
@@ -226,6 +232,7 @@ webufunc_get_grit_info(){
     done
 
     # if we didn't find a grit dir going UP, then lets check a few below (this is primarily for drupal multisite installs)
+    # ended up handling this situation in a slightly different fashion as well by adusting start (see above in this same sub)
     if [ ! -n "${grit}" ]; then
         deecho "# Checking downward for grit dir"
         for downward in ${docroot}/sites/${site}/.grit; do
