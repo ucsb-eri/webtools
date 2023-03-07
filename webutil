@@ -213,6 +213,7 @@ webufunc_get_grit_info(){
     deecho "##################### get grit info: $site #######################"
     deecho "# Attempting to locate .grit directory"
     start="${docroot}"
+    grit=   # need to reset this from any previous site
     
     if [ "$start" = "/usr/local/share/drupal" ]; then
         start=
