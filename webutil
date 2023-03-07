@@ -210,6 +210,7 @@ webusc_process_apache_config(){
 ################################################################################
 webufunc_get_grit_info(){
     # try to locate a grit folder associated with the docroot in question, this one checks UP the path
+    deecho "##################### get grit info #######################"
     deecho "# Attempting to locate .grit directory"
     start="${docroot}"
     
