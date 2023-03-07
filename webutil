@@ -232,13 +232,15 @@ webufunc_get_grit_info(){
             [ -d "${ckgrit}" ] && { grit="${ckgrit}"; break; }
             start=$(dirname "${start}")
         done
+    else
+        decho "# didn't find site dir in static locations"
     fi
     
 
     # if we didn't find a grit dir going UP, then lets check a few below (this is primarily for drupal multisite installs)
     # ended up handling this situation in a slightly different fashion as well by adusting start (see above in this same sub)
     if [ ! -n "${grit}" ]; then
-        deecho "# Checking downward for grit dir"
+        deecho "# Checking downward for grit dir: ${docroot}/sites/${site}/.grit"
         for downward in ${docroot}/sites/${site}/.grit; do
             deecho "# Checking downward for .grit dir at: $downward"
             [ -d ${downward} ] && grit=${downward}
@@ -246,6 +248,7 @@ webufunc_get_grit_info(){
     fi
 
     # reset any saved values from previous check
+    decho "# resetting gritFields"
     for f in $gritFields; do
         confa[$f]=
     done
