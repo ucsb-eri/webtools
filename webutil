@@ -210,21 +210,23 @@ webusc_process_apache_config(){
 ################################################################################
 webufunc_get_grit_info(){
     # try to locate a grit folder associated with the docroot in question, this one checks UP the path
-    deecho "# Checking upward for .grit directory"
+    deecho "# Attempting to locate .grit directory"
     start="${docroot}"
     
     if [ "$start" = "/usr/local/share/drupal" ]; then
         start=
         for s in /var/www/vhosts /var/www/vhosts/.zMigrated; do
+	    decho "# checking path: ${s} to see if it exists"
             ckdir=$s/$site
 	    [ -d "$ckdir" ] && { start=${ckdir}; break; }
 	done
     fi
 
-    [ -n "${start}" ] || return 0
+    [ -n "${start}" ] || { decho "# start not set"; return 0; }
     
     grit=
     while [ "${start}" != "/" -a "${start}" != "" ]; do
+        decho "# Using start: ${start}"
         ckgrit="${start}/.grit"
         decho "checking .grit path: $ckgrit"
         [ -d "${ckgrit}" ] && { grit="${ckgrit}"; break; }
