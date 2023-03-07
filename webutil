@@ -223,7 +223,7 @@ webufunc_get_grit_info(){
 	done
     fi
 
-    if [ -n "${start} ]; then
+    if [ -n "${start}" ]; then
         grit=
         while [ "${start}" != "/" -a "${start}" != "" ]; do
             decho "# Using start: ${start}"
