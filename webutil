@@ -223,16 +223,17 @@ webufunc_get_grit_info(){
 	done
     fi
 
-    [ -n "${start}" ] || { decho "# start not set"; return 0; }
+    if [ -n "${start} ]; then
+        grit=
+        while [ "${start}" != "/" -a "${start}" != "" ]; do
+            decho "# Using start: ${start}"
+            ckgrit="${start}/.grit"
+            decho "checking .grit path: $ckgrit"
+            [ -d "${ckgrit}" ] && { grit="${ckgrit}"; break; }
+            start=$(dirname "${start}")
+        done
+    fi
     
-    grit=
-    while [ "${start}" != "/" -a "${start}" != "" ]; do
-        decho "# Using start: ${start}"
-        ckgrit="${start}/.grit"
-        decho "checking .grit path: $ckgrit"
-        [ -d "${ckgrit}" ] && { grit="${ckgrit}"; break; }
-        start=$(dirname "${start}")
-    done
 
     # if we didn't find a grit dir going UP, then lets check a few below (this is primarily for drupal multisite installs)
     # ended up handling this situation in a slightly different fashion as well by adusting start (see above in this same sub)
