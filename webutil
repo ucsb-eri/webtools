@@ -381,9 +381,9 @@ webusc_nginx_wiki_table(){
         decho "# processing nginx conf: $conf"
         ((cntr++))
         #echo "** enabled conf: $conf"
-        color='green'
-        echo "$conf" | egrep -qi 'retired' && color='red'
-        echo "$conf" | egrep -qi 'migrated' && color='orange'
+        color='red'
+        echo "$conf" | egrep -qi 'retired' && color='darkgreen'
+        echo "$conf" | egrep -qi 'migrated' && color='green'
 
         webusc_process_nginx_config_file "${conf}" "${color}"
     done < <(find /etc/nginx/*.d -type f -name '*.conf' | sort )
@@ -400,7 +400,7 @@ webusc_apache_wiki_table(){
         ((cntr++))
         #echo "** enabled conf: $conf"
         color='red'
-        echo "$conf" | egrep -qi 'retired' && color='brown'
+        echo "$conf" | egrep -qi 'retired' && color='darkgreen'
         echo "$conf" | egrep -qi 'migrated' && color='green'
 
         webusc_process_apache_config "${conf}" "${color}"
