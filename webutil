@@ -399,9 +399,9 @@ webusc_apache_wiki_table(){
     while read conf; do
         ((cntr++))
         #echo "** enabled conf: $conf"
-        color='green'
-        echo "$conf" | egrep -qi 'retired' && color='red'
-        echo "$conf" | egrep -qi 'migrated' && color='orange'
+        color='red'
+        echo "$conf" | egrep -qi 'retired' && color='brown'
+        echo "$conf" | egrep -qi 'migrated' && color='green'
 
         webusc_process_apache_config "${conf}" "${color}"
     done < <(find $confd -type f -name '*.conf' | sort | grep -v 'le-ssl')
